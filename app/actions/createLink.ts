@@ -5,26 +5,27 @@ import { prisma } from "@/lib/prisma";
 import { createSlug } from "./createSlug";
 
 
-export async function createLink(url: string) {
-    if(!url || url.trim()==""){
+export async function createLink(url: string, name: string) {
+    if (!url || url.trim() === "") {
         throw new Error("URL is required")
     }
 
-    const user = await requireAuth(); 
+    if (!name || name.trim() === "") {
+        throw new Error("Link name is required")
+    }
+
+    const user = await requireAuth();
 
     const plan = user.plan;
 
-
-    // might be an error in userId = user.id thing. 
-
-    if(plan === "FREE"){
+    if (plan === "FREE") {
         const count = await prisma.link.count({
             where: {
                 userId: user.id
             }
         })
 
-        if(count>=10){
+        if (count >= 10) {
             throw new Error("Free plan limit reached")
         }
     }
@@ -33,8 +34,9 @@ export async function createLink(url: string) {
 
     const link = await prisma.link.create({
         data: {
-            userId: user.clerkUserId, 
-            slug: slug, 
+            userId: user.clerkUserId,
+            name: name.trim(),
+            slug: slug,
             originalUrl: url,
             url: `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN}/${slug}`,
         }

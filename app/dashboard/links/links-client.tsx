@@ -70,7 +70,9 @@ export default function LinksClient({
         startTransition(async () => {
             try {
                 const url = formData.get("originalUrl") as string;
-                const newLink = await createLink(url);
+                const name = (formData.get("name") as string)?.trim();
+                if (!name) { setError("Link name is required"); return; }
+                const newLink = await createLink(url, name);
                 setLinks((prev) => [newLink, ...prev]);
             } catch (err: any) {
                 setError(err.message || "Something went wrong");
@@ -209,8 +211,8 @@ export default function LinksClient({
                         </div>
                     ) : (
                         links.map((link) => {
-                            const shortLink = `lnk.to/trk/${link.slug}`;
-                            const fullShort = `https://${shortLink}`;
+                            const shortLink = `${process.env.NEXT_PUBLIC_ROOT_DOMAIN}/${link.slug}`;
+                            const fullShort = `http://${shortLink}`;
                             const clickCount = link._count?.clickEvents ?? 0;
                             const name = deriveName(link.originalUrl);
                             const isCopied = copied === link.id;
@@ -399,14 +401,12 @@ export default function LinksClient({
                                 display: "block",
                                 marginBottom: 8,
                             }}>
-                                Link Name{" "}
-                                <span style={{ textTransform: "none", fontWeight: 400, letterSpacing: 0 }}>
-                                    (optional)
-                                </span>
+                                Link Name
                             </label>
                             <Input
                                 name="name"
                                 placeholder="Resume, portfolio, proposal…"
+                                required
                                 className="rounded-none border-0 border-b bg-transparent focus-visible:ring-0 px-0"
                                 style={{
                                     borderColor: border,

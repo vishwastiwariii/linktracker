@@ -61,7 +61,7 @@ export async function GET(
     const browser = getBrowser(userAgent);
 
 
-    prisma.clickEvent.create({
+    await prisma.clickEvent.create({
         data: {
             linkId: link.id,
             device,
